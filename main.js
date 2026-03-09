@@ -24,7 +24,7 @@ function generateToken() {
     // Match Python's secrets.choice from string.ascii_uppercase + string.digits, 20 chars
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let token = "";
-    for (let j = 0; j < 45; j++) {
+    for (let j = 0; j < 20; j++) {
         token += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return token;
