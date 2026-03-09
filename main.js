@@ -21,9 +21,10 @@ function isPaymentSuccess() {
 
 // Generate futuristic tokens
 function generateToken() {
-    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+    // Match Python's secrets.choice from string.ascii_uppercase + string.digits, 20 chars
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
     let token = "";
-    for (let j = 0; j < 20; j++) {
+    for (let j = 0; j < 45; j++) {
         token += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return token;
@@ -40,19 +41,18 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
+    // Always reset to pre-payment state on load
     if (tokenCard && tokenList) {
+        tokenCard.style.display = "none";
+        tokenList.innerHTML = "";
+        // If payment detected, show token
         if (isPaymentSuccess()) {
             tokenCard.style.display = "flex";
-            // Generate and display 1 futuristic token
             const token = generateToken();
             tokenList.innerHTML = `<div class=\"token futuristic-token\">${token}</div>`;
-            // Optionally scroll to tokens
             setTimeout(() => {
                 tokenCard.scrollIntoView({ behavior: "smooth", block: "center" });
             }, 300);
-        } else {
-            tokenCard.style.display = "none";
-            tokenList.innerHTML = "";
         }
     }
 });
