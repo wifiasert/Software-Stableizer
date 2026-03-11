@@ -1,7 +1,6 @@
 const PAYMENT_URL = "https://paystack.shop/pay/gk4arw42zx";
-const TOKEN_API_URL = window.VERTEX_TOKEN_API || "https://api.yourdomain.com";
 const SOFTWARE_CODE = window.VERTEX_SOFTWARE_CODE || "VERTEX";
-const ISSUE_ENDPOINT = `${TOKEN_API_URL.replace(/\/$/, "")}/api/tokens/issue`;
+const TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
 const TOKEN_REGEX = /^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/;
 
 const elements = {
@@ -11,6 +10,35 @@ const elements = {
   paymentStatus: document.getElementById("paymentStatus"),
   tokenValue: document.getElementById("tokenValue"),
 };
+
+function resolveTokenSecret() {
+  if (window.VERTEX_TOKEN_SECRET) {
+    return window.VERTEX_TOKEN_SECRET;
+  }
+  const parts = window.VERTEX_TOKEN_SECRET_B64_PARTS;
+  if (Array.isArray(parts) && parts.length > 0) {
+    try {
+      return atob(parts.join(""));
+    } catch (_err) {
+      return "";
+    }
+  }
+  return "";
+}
+
+const TOKEN_SECRET = resolveTokenSecret();
+
+function setStatus(message, type) {
+  if (!elements.paymentStatus) return;
+  elements.paymentStatus.textContent = message || "";
+  elements.paymentStatus.classList.remove("status-banner--error", "status-banner--ok");
+  if (type === "error") {
+    elements.paymentStatus.classList.add("status-banner--error");
+  }
+  if (type === "ok") {
+    elements.paymentStatus.classList.add("status-banner--ok");
+  }
+}
 
 function getTokenTextById(id) {
   const el = id ? document.getElementById(id) : null;
@@ -43,11 +71,7 @@ function initCopyButtons() {
       const targetId = btn.getAttribute("data-copy-target");
       const token = getTokenTextById(targetId);
       if (!token) {
-        if (elements.paymentStatus) {
-          elements.paymentStatus.textContent = "No token available to copy yet.";
-          elements.paymentStatus.classList.add("status-banner--error");
-          elements.paymentStatus.classList.remove("status-banner--ok");
-        }
+        setStatus("No token available to copy yet.", "error");
         return;
       }
       try {
@@ -59,101 +83,146 @@ function initCopyButtons() {
           btn.setAttribute("title", "Copy token");
         }, 1400);
       } catch (_error) {
-        if (elements.paymentStatus) {
-          elements.paymentStatus.textContent =
-            "Copy failed. Please select the token and copy manually.";
-          elements.paymentStatus.classList.add("status-banner--error");
-          elements.paymentStatus.classList.remove("status-banner--ok");
-        }
+        setStatus("Copy failed. Please select the token and copy manually.", "error");
       }
     });
   });
 }
 
-function isDisallowedApi(url) {
-  try {
-    const parsed = new URL(url);
-    const host = parsed.hostname.toLowerCase();
-    if (parsed.protocol !== "https:") return true;
-    if (host === "localhost" || host === "127.0.0.1" || host === "0.0.0.0") {
-      return true;
-    }
-    return false;
-  } catch (_err) {
-    return true;
-  }
+function bytesToBase64(bytes) {
+  let binary = "";
+  bytes.forEach((b) => {
+    binary += String.fromCharCode(b);
+  });
+  return btoa(binary);
 }
 
-function generateExampleToken() {
-  const payload = {
-    user: "user@example.com",
-    code: SOFTWARE_CODE,
-    iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60,
-  };
-  const encoded = btoa(JSON.stringify(payload))
+function b64urlEncodeBytes(bytes) {
+  return bytesToBase64(bytes)
     .replace(/\+/g, "-")
     .replace(/\//g, "_")
     .replace(/=+$/, "");
-  const signature = Array.from({ length: 16 }, () =>
-    Math.floor(Math.random() * 16).toString(16)
-  ).join("");
-  return `${encoded}.${signature}`;
 }
 
-async function requestIssuedToken(reference) {
-  try {
-    if (isDisallowedApi(TOKEN_API_URL)) {
-      throw new Error("Activation server must be a public HTTPS URL.");
-    }
-    const params = new URLSearchParams(window.location.search);
-    const user = params.get("email") || params.get("user") || reference;
-    const response = await fetch(ISSUE_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        reference,
-        user,
-      }),
+function utf8ToBytes(text) {
+  return new TextEncoder().encode(text);
+}
+
+function canonicalPayload(payload) {
+  const ordered = {};
+  Object.keys(payload)
+    .sort()
+    .forEach((key) => {
+      ordered[key] = payload[key];
     });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok) {
-      throw new Error(data.error || "Token issuance failed.");
-    }
-    if (data && data.error) {
-      throw new Error(data.error);
-    }
-    if (!data || !TOKEN_REGEX.test(data.token || "")) {
-      throw new Error("Invalid token returned from server.");
-    }
-    return data.token;
-  } catch (error) {
-    if (elements.paymentStatus) {
-      elements.paymentStatus.textContent =
-        error && error.message
-          ? error.message
-          : "We could not issue a token yet. Please contact support.";
-      elements.paymentStatus.classList.add("status-banner--error");
-    }
-    return null;
+  return JSON.stringify(ordered);
+}
+
+let hmacKeyPromise = null;
+
+function getHmacKey() {
+  if (!TOKEN_SECRET) {
+    return Promise.reject(new Error("Token secret is not configured."));
+  }
+  if (!window.crypto || !crypto.subtle) {
+    return Promise.reject(new Error("Token generation requires HTTPS."));
+  }
+  if (!hmacKeyPromise) {
+    hmacKeyPromise = crypto.subtle.importKey(
+      "raw",
+      utf8ToBytes(TOKEN_SECRET),
+      { name: "HMAC", hash: "SHA-256" },
+      false,
+      ["sign"]
+    );
+  }
+  return hmacKeyPromise;
+}
+
+async function signPayload(payloadB64) {
+  const key = await getHmacKey();
+  const sig = await crypto.subtle.sign("HMAC", key, utf8ToBytes(payloadB64));
+  return b64urlEncodeBytes(new Uint8Array(sig));
+}
+
+async function generateToken(user, issuedAt) {
+  const now = issuedAt || Math.floor(Date.now() / 1000);
+  const payload = {
+    code: SOFTWARE_CODE,
+    exp: now + TOKEN_TTL_SECONDS,
+    iat: now,
+    user,
+  };
+  const payloadJson = canonicalPayload(payload);
+  const payloadB64 = b64urlEncodeBytes(utf8ToBytes(payloadJson));
+  const sig = await signPayload(payloadB64);
+  const token = `${payloadB64}.${sig}`;
+  if (!TOKEN_REGEX.test(token) || token.length < 33) {
+    throw new Error("Generated token is invalid.");
+  }
+  return token;
+}
+
+function storeTokenRecord(record) {
+  try {
+    const stored = localStorage.getItem("vertex_tokens");
+    const list = stored ? JSON.parse(stored) : [];
+    list.push(record);
+    localStorage.setItem("vertex_tokens", JSON.stringify(list));
+  } catch (_err) {
+    // Best-effort storage for static sites.
   }
 }
 
 function handlePurchase() {
   if (elements.termsAgree && !elements.termsAgree.checked) {
-    if (elements.paymentStatus) {
-      elements.paymentStatus.textContent =
-        "Please accept the terms and conditions before proceeding to payment.";
-      elements.paymentStatus.classList.add("status-banner--error");
-    }
+    setStatus("Please accept the terms and conditions before proceeding to payment.", "error");
     return;
   }
   window.location.href = PAYMENT_URL;
 }
 
-function renderExampleToken() {
+async function renderExampleToken() {
   if (!elements.exampleToken) return;
-  elements.exampleToken.textContent = generateExampleToken();
+  try {
+    const token = await generateToken("user@example.com");
+    elements.exampleToken.textContent = token;
+  } catch (error) {
+    elements.exampleToken.textContent = "Token generation unavailable.";
+    setStatus(error.message || "Token generation failed.", "error");
+  }
+}
+
+async function handlePaymentSuccess() {
+  if (!elements.paymentStatus) return;
+  const params = new URLSearchParams(window.location.search);
+  const success =
+    (params.get("status") || "").toLowerCase() === "success" ||
+    (params.get("payment") || "").toLowerCase() === "completed" ||
+    (params.get("paid") || "").toLowerCase() === "true";
+  if (!success) return;
+
+  const reference =
+    params.get("reference") || params.get("trxref") || params.get("payment_ref") || `offline-${Date.now()}`;
+  const user = params.get("email") || params.get("user") || "offline-user";
+  const issuedAt = Math.floor(Date.now() / 1000);
+
+  try {
+    const token = await generateToken(user, issuedAt);
+    if (elements.tokenValue) {
+      elements.tokenValue.textContent = token;
+    }
+    storeTokenRecord({
+      token,
+      user,
+      reference,
+      issued_at: issuedAt,
+      expires_at: issuedAt + TOKEN_TTL_SECONDS,
+    });
+    setStatus("Payment completed! Here is your valid token.", "ok");
+  } catch (error) {
+    setStatus(error.message || "Token generation failed.", "error");
+  }
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -164,10 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.purchaseBtn.disabled = !elements.termsAgree.checked;
     elements.termsAgree.addEventListener("change", () => {
       elements.purchaseBtn.disabled = !elements.termsAgree.checked;
-      if (elements.paymentStatus) {
-        elements.paymentStatus.textContent = "";
-        elements.paymentStatus.classList.remove("status-banner--error", "status-banner--ok");
-      }
+      setStatus("", "");
     });
   }
 
@@ -175,32 +241,5 @@ document.addEventListener("DOMContentLoaded", () => {
     elements.purchaseBtn.addEventListener("click", handlePurchase);
   }
 
-  if (elements.paymentStatus) {
-    const params = new URLSearchParams(window.location.search);
-    const success =
-      (params.get("status") || "").toLowerCase() === "success" ||
-      (params.get("payment") || "").toLowerCase() === "completed" ||
-      (params.get("paid") || "").toLowerCase() === "true";
-    if (success) {
-      const reference =
-        params.get("reference") ||
-        params.get("trxref") ||
-        params.get("payment_ref");
-      if (!reference) {
-        elements.paymentStatus.textContent =
-          "Payment completed, but no reference was provided. Please contact support.";
-        elements.paymentStatus.classList.add("status-banner--error");
-        return;
-      }
-      requestIssuedToken(reference).then((token) => {
-        if (!token) return;
-        if (elements.tokenValue) {
-          elements.tokenValue.textContent = token;
-        }
-        elements.paymentStatus.textContent = "Payment completed! Here is your valid token.";
-        elements.paymentStatus.classList.remove("status-banner--error");
-        elements.paymentStatus.classList.add("status-banner--ok");
-      });
-    }
-  }
+  handlePaymentSuccess();
 });
