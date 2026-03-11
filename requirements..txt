@@ -1,1 +1,6 @@
-## requirements.txt
+diff --git a/c:\Users\user\Pictures\rexmacs control\requirements.txt b/c:\Users\user\Pictures\rexmacs control\requirements.txt
+new file mode 100644
+--- /dev/null
++++ b/c:\Users\user\Pictures\rexmacs control\requirements.txt
+@@ -0,0 +1,1 @@
++# No external Python packages are required for activation_website/token_service.py
