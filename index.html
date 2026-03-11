@@ -1,78 +1,160 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vertex Activation System</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-    <header class="header neo-header">
-        <nav class="navbar">
-            <div class="logo-area">
-                <img src="images/vertex.png" alt="Logo" class="logo futuristic-glow">
-                <span class="brand"> Vertex Activation System</span>
-            </div>
-            <ul class="nav-links">
-                <li><a href="#how">How It Works</a></li>
-                <li><a href="#reviews">Reviews</a></li>
-                <li><a href="#buy">Buy Token</a></li>
-                <li><a href="https://godspowergwd.github.io/vertex/">Get help</a></li>
-            </ul>
-        </nav>
-        <div class="banner">
-            <span class="banner-text">🚀 Limited Time: Get 3X Speed Tokens with Every Purchase!</span>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vertex Activation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script>
+      window.VERTEX_TOKEN_API = "https://software-stableizer-2.onrender.com";
+      window.VERTEX_SOFTWARE_CODE = "VERTEX4070";
+    </script>
+  </head>
+  <body class="page page--activation">
+    <div class="bg-orb bg-orb--one"></div>
+    <div class="bg-orb bg-orb--two"></div>
+
+    <main class="shell">
+      <section class="hero reveal">
+        <div class="brand">
+          <div class="logo"><img src="vertex.png" width="60px" height="60px" style="text-align: center;"></div>
+          <div>
+            <p class="brand-eyebrow">Vertex Management System</p>
+            <h1>Activation Portal</h1>
+            <p class="brand-subtitle">
+              Unlock Vertex with a secure activation token.
+            </p>
+          </div>
         </div>
-    </header>
-    <main class="main-content">
-        <section class="card hero-card neo-card" id="buy">
-            <h1 class="futuristic-title">Vertex Activation System</h1>
-            <p class="subtitle">Buy your activation token here.</p>
-            <a href="https://paystack.shop/pay/gk4arw42zx" class="pay-btn neo-btn" target="_blank" rel="noopener">Activate Now</a>
-            <div style="margin-top: 8px; color: #4fa3f7; font-size: 0.95em; font-weight: 500; letter-spacing: 0.5px;">Secured payment link</div>
-            <div class="review-row">
-                <span class="star">★★★★★</span>
-                <span class="review-count">Over 195,000 activations</span>
+
+        <div class="hero-card">
+          <h2>How activation works</h2>
+          <ol class="steps">
+            <li>Purchase a license securely.</li>
+            <li>Receive a unique activation token.</li>
+            <li>Enter the token in your Vertex software to unlock access.</li>
+          </ol>
+          <div class="token-example">
+            <div class="token-example-label">Example token</div>
+            <div class="token-field">
+              <code id="exampleToken" class="token-text">eyJ1c2VyIjoiZXhhbXBsZSJ9.abcd1234</code>
+              <button
+                type="button"
+                class="copy-btn"
+                data-copy-target="exampleToken"
+                aria-label="Copy example token"
+                title="Copy token"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1zm3 4H10a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H10V7h9v14z"/>
+                </svg>
+              </button>
             </div>
-        </section>
-        <section class="card token-card neo-card" id="tokenCard" style="display:none;">
-            <h2 class="token-title">Your Activation Code</h2>
-            <div class="token-list" id="tokenList"></div>
-            <div class="token-success">Activation successful! Your code is ready to use.</div>
-        </section>
-        <section class="card about-card neo-card" id="how">
-            <h2>How Vertex Activation Works</h2>
-            <ul class="about-list">
-                <li>Purchase your activation code to unlock premium features and full software access.</li>
-                <li>Vertex activation ensures your software is genuine and always up to date.</li>
-                <li>Simple, secure, and instant activation—no technical skills required.</li>
-                <li>Trusted by thousands of professionals and businesses worldwide.</li>
-            </ul>
-        </section>
-        <section class="card testimonial-card neo-card" id="reviews">
-            <h2>What Our Users Say</h2>
-            <div class="testimonial">
-                <p>“Vertex activation made my software experience seamless and secure!”</p>
-                <span class="user">— Alex, IT Specialist</span>
-            </div>
-            <div class="testimonial">
-                <p>“Instant access and peace of mind. Vertex is the best activation system I’ve used.”</p>
-                <span class="user">— Maria, SaaS Founder</span>
-            </div>
-        </section>
+          </div>
+          <div class="hero-meta">
+            <div class="meta-chip">Signed token</div>
+            <div class="meta-chip">Includes user + timestamp</div>
+            <div class="meta-chip">Single-use token</div>
+          </div>
+        </div>
+
+        <div class="terms-card" aria-live="polite">
+          <h4>Terms and Conditions</h4>
+          <ul class="terms-list">
+            <li>This is a one-month subscription only.</li>
+            <li>Your activation token expires one month after purchase.</li>
+            <li>Tokens are single-use and must be entered inside the Vertex software.</li>
+          </ul>
+        </div>
+
+        <div class="token-box">
+          <div class="token-box-label">Token will appear here</div>
+          <div class="token-field">
+            <div id="tokenValue" class="token-text">Awaiting payment confirmation.</div>
+            <button
+              type="button"
+              class="copy-btn"
+              data-copy-target="tokenValue"
+              aria-label="Copy issued token"
+              title="Copy token"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1zm3 4H10a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H10V7h9v14z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div id="paymentStatus" class="status-banner" role="status" aria-live="polite"></div>
+      </section>
+
+      <section class="panel reveal reveal--delay">
+        <div class="panel-header">
+          <h3>Purchase and activate</h3>
+          <p>No token entry happens on this website. Activation is completed inside the Vertex app.</p>
+        </div>
+
+        <div class="info-grid">
+          <div class="info-card">
+            <h4>1. Purchase your license</h4>
+            <p>
+              Use the secure checkout to purchase your Vertex license. You will
+              receive your activation token after payment verification.
+            </p>
+            <button type="button" id="purchaseBtn" class="primary" disabled>Buy Now</button>
+            <label class="terms-ack">
+              <input type="checkbox" id="termsAgree" />
+              <span>I understand this is a one-month subscription and the token expires after one month.</span>
+            </label>
+          </div>
+          <div class="info-card">
+            <h4>2. Receive your token</h4>
+            <p>
+              Your token is delivered by email or WhatsApp. It matches the
+              secure format the software expects: a signed token that includes
+              your user data, timestamp, and the Vertex software code.
+            </p>
+          </div>
+          <div class="info-card">
+            <h4>3. Activate inside Vertex</h4>
+            <p>
+              Open the Vertex software, paste the token into the activation
+              screen, and your account will unlock for full use.
+            </p>
+          </div>
+        </div>
+
+        <div class="contact-card">
+          <h4>Need help?</h4>
+          <p>If you do not receive your token or need support, contact us:</p>
+          <div class="contact-list">
+            <div>Support email: petersgodspower4@gmail.com</div>
+            <div>Phone/WhatsApp: +233 55 936 5299</div>
+            <div>Phone/WhatsApp: 050 361 3329</div>
+            <div>Phone/WhatsApp: 054 50 32699</div>
+          </div>
+        </div>
+      </section>
     </main>
-    <footer class="footer neo-footer">
-        <div class="footer-content">
-            <div class="footer-links">
-                <a href="#buy">Buy Token</a> |
-                <a href="#how">How It Works</a> |
-                <a href="#reviews">Reviews</a>
-                <a href="https://godspowergwd.github.io/vertex/">Get help</a>
-            </div>
-            <div class="footer-copy">&copy; 2026 Vertex Activation System. All rights reserved.</div>
-            <div class="footer-note">Vertex Activation System &mdash; Secure, instant, and trusted software activation.</div>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div>
+          <strong>Vertex Management System</strong>
+          <p>Secure activation for trusted teams.</p>
         </div>
+        <div>
+          <span>Support email: petersgodspower4@gmail.com</span>
+          <span>Phone/WhatsApp: +233 55 936 5299</span>
+        </div>
+      </div>
     </footer>
-    <script src="main.js"></script>
-</body>
+
+    <script src="app.js"></script>
+  </body>
 </html>

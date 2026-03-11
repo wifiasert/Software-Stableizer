@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Vertex Activated</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script>
+      window.VERTEX_TOKEN_API = "https://software-stableizer-2.onrender.com";
+      window.VERTEX_SOFTWARE_CODE = "VERTEX4070";
+    </script>
+  </head>
+  <body class="page page--success">
+    <div class="bg-orb bg-orb--one"></div>
+    <div class="bg-orb bg-orb--two"></div>
+
+    <main class="shell shell--center">
+      <section class="success-card reveal">
+        <div class="success-icon">✓</div>
+        <h1>Payment Confirmed</h1>
+        <p>Your activation token is now active. Open Vertex and enter the token to unlock the software.</p>
+        <div id="paymentStatus" class="status-banner" role="status" aria-live="polite"></div>
+        <div class="token-box">
+          <div class="token-box-label">Token will appear here</div>
+          <div class="token-field">
+            <div id="tokenValue" class="token-text">Awaiting payment confirmation.</div>
+            <button
+              type="button"
+              class="copy-btn"
+              data-copy-target="tokenValue"
+              aria-label="Copy issued token"
+              title="Copy token"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M16 1H6a2 2 0 0 0-2 2v12h2V3h10V1zm3 4H10a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H10V7h9v14z"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <div class="token-display">
+          Tokens expire one month after purchase and are valid for a single activation.
+        </div>
+        <a class="ghost" href="index.html">Back to activation</a>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
